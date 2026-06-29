@@ -1198,6 +1198,11 @@ function init(){
   $('export-copy').addEventListener('click',copyExport);
 }
 
+window.addEventListener('beforeunload', function(e) {
+  e.preventDefault();
+  e.returnValue = '';
+});
+
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
 else init();
 </script>
