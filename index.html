@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Quantiphi — Large Deal Canvas</title>
+<style>
+:root{
+  --q-green:#129F4D;--q-green-mid:#2FCC6E;--q-green-light:#48E086;
+  --q-blue-dark:#182B70;--q-blue:#254499;--q-blue-mid:#3557E5;--q-blue-light:#55A2FF;
+  --q-amber:#F5A623;--q-red:#DC2626;
+  --q-grey-md:#606060;--q-grey:#8E8E8E;--q-grey-lt:#B2B2B2;--q-grey-pale:#D6D6D6;--q-grey-bg:#EFEFEF;
+  --bg:#F4F6FB;--surface:#fff;--border:#DDE3F0;--border-lt:#E8ECF5;
+  --text:#1A2340;--text-muted:#5B6B8A;--text-faint:#9AAAC0;
+  --shadow:0 2px 14px rgba(24,43,112,.07);--shadow-lg:0 12px 40px rgba(24,43,112,.16);
+  --radius:14px;--radius-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,textarea,select{font-family:inherit;font-size:inherit;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--q-grey-pale);border-radius:4px;}
+
+#topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:var(--q-blue-dark);display:flex;align-items:center;gap:14px;padding:0 20px;box-shadow:0 2px 20px rgba(24,43,112,.25);}
+.logo{display:flex;align-items:center;gap:11px;cursor:pointer;flex-shrink:0;}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--q-green),var(--q-blue-mid));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;letter-spacing:-1px;}
+.logo-text{font-size:15px;font-weight:700;color:#fff;line-height:1.1;}
+.logo-sub{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+.tb-divider{width:1px;height:26px;background:rgba(255,255,255,.14);flex-shrink:0;}
+#tb-region{font-size:11px;color:rgba(255,255,255,.55);font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+#tb-account{font-size:14px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28vw;}
+.tb-spacer{flex:1;}
+.tb-btn{padding:7px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap;}
+.tb-ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);}
+.tb-ghost:hover{background:rgba(255,255,255,.2);color:#fff;}
+.tb-green{background:var(--q-green);color:#fff;}.tb-green:hover{background:var(--q-green-mid);}
+.tb-blue{background:var(--q-blue-mid);color:#fff;}.tb-blue:hover{background:#2e4ed0;}
+
+.page{display:none;padding-top:58px;min-height:100%;}
+.page.active{display:block;}
+.page.flex-page{display:none;}
+.page.flex-page.active{display:flex;}
+
+#landing{flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%,#1d3380,var(--q-blue-dark) 50%,#101d4d);padding:90px 20px 50px;text-align:center;}
+.landing-badge{display:inline-block;padding:5px 15px;border-radius:20px;background:rgba(18,159,77,.2);border:1px solid rgba(47,204,110,.4);font-size:11px;font-weight:600;color:var(--q-green-light);letter-spacing:.07em;text-transform:uppercase;margin-bottom:18px;}
+.landing-title{font-size:clamp(32px,6vw,44px);font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.05;margin-bottom:12px;}
+.landing-sub{font-size:clamp(14px,2vw,16px);color:rgba(255,255,255,.62);max-width:460px;margin:0 auto 44px;line-height:1.55;}
+.region-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;width:100%;max-width:720px;}
+.region-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:var(--radius);padding:22px 20px;text-align:left;transition:all .2s;}
+.region-card:hover{background:rgba(255,255,255,.12);border-color:var(--q-green);transform:translateY(-3px);}
+.rc-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:5px;}
+.rc-count{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;}
+.rc-bar{display:flex;gap:3px;}
+.rc-seg{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.14);transition:background .3s;}
+.rc-seg.filled{background:var(--q-green-mid);}
+
+.rh-header{background:linear-gradient(120deg,var(--q-blue-dark),var(--q-blue));color:#fff;padding:36px 32px 30px;}
+.rh-badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--q-green-light);margin-bottom:10px;}
+.rh-title{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:5px;}
+.rh-sub{font-size:13px;color:rgba(255,255,255,.6);max-width:520px;}
+.rh-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;}
+.rh-body{padding:30px 32px 60px;max-width:1100px;}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;}
+.account-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.account-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .16s;}
+.account-card:hover{border-color:var(--q-blue-mid);box-shadow:var(--shadow);transform:translateY(-2px);}
+.ac-name{font-size:16px;font-weight:700;margin-bottom:5px;}
+.ac-meta{font-size:11px;color:var(--text-muted);margin-bottom:16px;line-height:1.5;}
+.ac-actions{display:flex;gap:8px;}
+.ac-open{flex:1;padding:8px;border-radius:var(--radius-sm);background:var(--q-blue-dark);color:#fff;font-size:12px;font-weight:600;transition:background .15s;}
+.ac-open:hover{background:var(--q-blue);}
+.ac-del{padding:8px 12px;border-radius:var(--radius-sm);background:#FEF2F2;color:#DC2626;font-size:13px;transition:background .15s;}
+.ac-del:hover{background:#FEE2E2;}
+.add-account-btn{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--border);border-radius:var(--radius);padding:20px;color:var(--text-muted);font-size:13px;font-weight:600;transition:all .15s;min-height:130px;}
+.add-account-btn:hover{border-color:var(--q-green);color:var(--q-green);background:rgba(18,159,77,.03);}
+.empty-hint{grid-column:1/-1;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);font-size:13px;}
+
+/* CANVAS — tabbed */
+.canvas-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px 0;position:sticky;top:58px;z-index:50;}
+.ch-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.canvas-region-pill{padding:4px 11px;border-radius:20px;background:var(--q-blue-dark);font-size:11px;font-weight:600;color:#fff;}
+.canvas-account{font-size:18px;font-weight:700;}
+.canvas-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;}
+.canvas-tabs::-webkit-scrollbar{display:none;}
+.cv-tab{padding:11px 20px;font-size:13.5px;font-weight:600;color:var(--text-muted);border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .15s;}
+.cv-tab.active{color:var(--q-blue-mid);border-bottom-color:var(--q-blue-mid);}
+.cv-tab:hover:not(.active){color:var(--text);}
+#canvas-content{padding:24px 28px 70px;max-width:1100px;}
+.view-intro{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:22px;max-width:760px;}
+
+/* Research accordions */
+.pillar-acc{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;background:var(--surface);transition:border-color .15s;}
+.pillar-acc.open{border-color:var(--q-blue-mid);}
+.pillar-acc-head{width:100%;display:flex;align-items:center;gap:13px;padding:15px 18px;text-align:left;}
+.pc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pa-text{flex:1;min-width:0;}
+.pa-num{font-size:9.5px;font-weight:700;letter-spacing:.06em;color:var(--text-faint);margin-bottom:1px;}
+.pa-label{font-size:14px;font-weight:700;}
+.pa-short{font-size:11.5px;color:var(--text-muted);}
+.pa-meta{font-size:12px;font-weight:700;color:var(--text-muted);background:var(--q-grey-bg);padding:3px 10px;border-radius:20px;flex-shrink:0;}
+.pa-arrow{font-size:11px;color:var(--text-faint);flex-shrink:0;width:14px;text-align:center;}
+.pillar-inner{padding:4px 18px 20px;border-top:1px solid var(--border-lt);}
+.rq-item{margin:14px 0;}
+.rq-question{font-size:13px;font-weight:600;margin-bottom:7px;line-height:1.45;display:flex;gap:9px;}
+.rq-num{width:20px;height:20px;border-radius:6px;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.rq-answer,.notes-area{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text);resize:vertical;outline:none;transition:border-color .15s;background:var(--bg);line-height:1.55;}
+.rq-answer{min-height:56px;}.notes-area{min-height:78px;}
+.rq-answer:focus,.notes-area:focus{border-color:var(--q-blue-mid);background:var(--surface);}
+.client-collapse{margin:16px 0 4px;border:1px solid var(--border-lt);border-radius:var(--radius-sm);overflow:hidden;}
+.client-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 13px;font-size:12px;font-weight:600;color:var(--q-green);background:rgba(18,159,77,.05);}
+.cli-arrow{font-size:10px;}
+.client-body{padding:12px 13px;display:flex;flex-direction:column;gap:7px;}
+.rq-client-hint{font-size:12px;color:var(--text-muted);padding:8px 11px;background:var(--bg);border-radius:7px;line-height:1.5;border-left:2px solid var(--q-green);}
+.notes-block{margin-top:16px;}
+.notes-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px;}
+
+/* Add cards (shared) */
+.add-card{background:var(--surface);border:1.5px solid var(--border-lt);border-radius:var(--radius);padding:16px 18px;margin-top:16px;}
+.add-card-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:9px;}
+.add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.add-input{flex:1;min-width:140px;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;transition:border-color .15s;}
+.add-input:focus{border-color:var(--q-blue-mid);}
+.add-btn{padding:9px 18px;border-radius:var(--radius-sm);background:var(--q-blue-mid);color:#fff;font-size:12px;font-weight:600;transition:background .15s;flex-shrink:0;}
+.add-btn:hover{background:var(--q-blue);}
+.days-select{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;background:var(--surface);color:var(--text);max-width:100%;}
+.days-select.flex1{flex:1;min-width:140px;}
+.no-content{font-size:12px;color:var(--text-faint);font-style:italic;text-align:center;padding:18px 0;}
+
+/* Signals flat list */
+.sig-list{display:flex;flex-direction:column;gap:8px;}
+.sig-row{display:flex;align-items:center;gap:11px;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);transition:border-color .15s;}
+.sig-row.dragging{opacity:.4;}
+.sig-row.drag-over{border-color:var(--q-blue-mid);border-style:dashed;}
+.sig-drag{color:var(--text-faint);cursor:grab;font-size:15px;flex-shrink:0;line-height:1;}
+.sig-dot{width:9px;height:9px;border-radius:5px;flex-shrink:0;}
+.sig-text{flex:1;font-size:13px;line-height:1.45;}
+.sig-colors{display:flex;gap:5px;flex-shrink:0;}
+.sig-color{width:20px;height:20px;border-radius:50%;border:2px solid transparent;transition:all .12s;opacity:.35;}
+.sig-color:hover{opacity:.7;}
+.sig-color.active{opacity:1;border-color:#fff;box-shadow:0 0 0 2px currentColor;}
+.sig-green{background:var(--q-green);color:var(--q-green);}
+.sig-yellow{background:var(--q-amber);color:var(--q-amber);}
+.sig-red{background:var(--q-red);color:var(--q-red);}
+.row-del{width:24px;height:24px;border-radius:6px;color:var(--text-faint);font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.row-del:hover{background:rgba(220,38,38,.1);color:#DC2626;}
+
+/* Commercial */
+.cm-list{display:flex;flex-direction:column;gap:9px;}
+.cm-row{display:flex;align-items:flex-start;gap:11px;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);transition:border-color .15s;}
+.cm-row.dragging{opacity:.4;}
+.cm-row.drag-over{border-color:var(--q-blue-mid);border-style:dashed;}
+.cm-drag{color:var(--text-faint);cursor:grab;font-size:15px;flex-shrink:0;margin-top:3px;line-height:1;}
+.cm-rank{width:26px;height:26px;border-radius:7px;background:var(--q-blue-dark);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.cm-main{flex:1;min-width:0;}
+.cm-name{font-size:13.5px;font-weight:600;margin-bottom:3px;}
+.cm-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--q-grey);background:var(--q-grey-bg);padding:1px 6px;border-radius:10px;vertical-align:middle;}
+.cm-desc{font-size:11.5px;color:var(--text-muted);line-height:1.4;}
+.rank-reasoning{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;margin-top:9px;outline:none;background:var(--bg);resize:vertical;min-height:46px;line-height:1.5;}
+.rank-reasoning:focus{border-color:var(--q-green);background:var(--surface);}
+
+/* Actions 30/60/90 */
+.act-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.act-bucket{border:1px solid var(--border-lt);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--surface);}
+.act-bucket-head{padding:14px 18px;display:flex;align-items:center;gap:10px;color:#fff;}
+.act-bucket-head.b30{background:linear-gradient(135deg,var(--q-green),var(--q-green-mid));}
+.act-bucket-head.b60{background:linear-gradient(135deg,var(--q-blue-mid),var(--q-blue-light));}
+.act-bucket-head.b90{background:linear-gradient(135deg,var(--q-blue-dark),var(--q-blue));}
+.act-month{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
+.act-days{font-size:21px;font-weight:800;line-height:1;margin-top:2px;}
+.act-count{margin-left:auto;font-size:13px;font-weight:700;background:rgba(255,255,255,.22);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.act-bucket-body{padding:14px;}
+.act-row{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--border-lt);border-radius:var(--radius-sm);margin-bottom:7px;background:var(--bg);}
+.act-cat-dot{width:8px;height:8px;border-radius:4px;flex-shrink:0;margin-top:4px;}
+.act-main{flex:1;min-width:0;}
+.act-text{font-size:12px;line-height:1.5;}
+.act-cat-tag{font-size:9.5px;color:var(--text-faint);margin-top:3px;font-weight:600;}
+.act-empty{font-size:12px;color:var(--text-faint);font-style:italic;text-align:center;padding:12px 0;}
+.act-add{display:flex;gap:6px;margin-top:8px;align-items:center;}
+.act-add .days-select{padding:7px 8px;font-size:11px;flex-shrink:1;min-width:0;}
+.act-add .days-select[data-actcat]{max-width:42%;}
+.act-add .add-btn{padding:7px 12px;font-size:11px;}
+.act-add .add-input{font-size:11px;padding:7px 9px;min-width:0;}
+
+/* PRESENT */
+#present-page{background:#fff;}
+.pp-topbar{background:linear-gradient(120deg,var(--q-blue-dark),var(--q-blue) 70%,var(--q-blue-mid));color:#fff;padding:26px 40px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.pp-badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--q-green-light);margin-bottom:7px;}
+.pp-account{font-size:clamp(24px,4vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.1;}
+.pp-region{font-size:13px;color:rgba(255,255,255,.6);margin-top:3px;}
+.pp-meta{display:flex;gap:22px;}
+.pp-stat{text-align:center;}
+.pp-stat-num{font-size:24px;font-weight:800;color:var(--q-green-light);}
+.pp-stat-label{font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+.cal-wrap{display:flex;justify-content:center;}
+.cal-toggle-btn{display:flex;align-items:center;gap:9px;padding:13px 26px;border-radius:var(--radius);background:var(--q-green);color:#fff;font-size:14px;font-weight:700;margin:24px auto;transition:all .15s;box-shadow:0 4px 16px rgba(18,159,77,.25);}
+.cal-toggle-btn:hover{background:var(--q-green-mid);transform:translateY(-1px);}
+#calendar-section{display:none;padding:0 40px 20px;max-width:1200px;margin:0 auto;}
+#calendar-section.visible{display:block;}
+.cal-header{text-align:center;margin-bottom:26px;}
+.cal-title{font-size:22px;font-weight:800;color:var(--q-blue-dark);margin-bottom:5px;}
+.cal-sub{font-size:13px;color:var(--text-muted);}
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+.cal-col{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border-lt);}
+.cal-col-head{padding:15px 18px;display:flex;align-items:center;gap:10px;color:#fff;}
+.cal-col-head.c30{background:linear-gradient(135deg,var(--q-green),var(--q-green-mid));}
+.cal-col-head.c60{background:linear-gradient(135deg,var(--q-blue-mid),var(--q-blue-light));}
+.cal-col-head.c90{background:linear-gradient(135deg,var(--q-blue-dark),var(--q-blue));}
+.cal-month{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85;}
+.cal-days{font-size:21px;font-weight:800;line-height:1;margin-top:2px;}
+.cal-count{margin-left:auto;font-size:13px;font-weight:700;background:rgba(255,255,255,.22);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.cal-body{background:var(--surface);padding:14px;min-height:120px;}
+.cal-action{padding:11px 12px;border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border-lt);background:var(--bg);}
+.cal-action:last-child{margin-bottom:0;}
+.cal-cat-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:11px;margin-bottom:6px;}
+.cal-action-text{font-size:12px;line-height:1.5;}
+.cal-empty{font-size:12px;color:var(--text-faint);font-style:italic;text-align:center;padding:24px 0;}
+.pp-body{padding:34px 40px 60px;max-width:920px;margin:0 auto;}
+.pp-section{margin-bottom:34px;}
+.pp-sec-header{display:flex;align-items:center;gap:13px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--q-grey-bg);}
+.pp-sec-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pp-sec-num{font-size:9.5px;font-weight:700;color:var(--text-faint);letter-spacing:.05em;}
+.pp-sec-label{font-size:16px;font-weight:700;}
+.pp-qa{margin-bottom:11px;}
+.pp-q{font-size:11.5px;font-weight:600;color:var(--text-muted);margin-bottom:4px;}
+.pp-a{font-size:13px;line-height:1.6;padding:9px 13px;background:var(--bg);border-radius:var(--radius-sm);border-left:3px solid var(--q-blue-mid);}
+.pp-note{margin-top:12px;padding:11px 14px;background:rgba(53,87,229,.05);border-left:3px solid var(--q-blue-mid);border-radius:0 8px 8px 0;font-size:12.5px;color:var(--text-muted);line-height:1.6;}
+.pp-signal{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
+.pp-sig-dot{width:9px;height:9px;border-radius:5px;flex-shrink:0;}
+.pp-sig-src{margin-left:auto;font-size:10px;color:var(--text-faint);font-weight:600;}
+.pp-cm{display:flex;align-items:flex-start;gap:11px;padding:10px 13px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:7px;}
+.pp-cm-rank{width:25px;height:25px;border-radius:7px;background:var(--q-blue-dark);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pp-cm-name{font-size:13px;font-weight:600;}
+.pp-cm-reason{font-size:11.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;}
+.pp-empty{text-align:center;padding:60px 20px;color:var(--text-faint);font-size:14px;}
+
+/* MODALS */
+#modal-overlay,#export-modal{display:none;position:fixed;inset:0;background:rgba(16,29,77,.45);z-index:400;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
+#modal-overlay.open,#export-modal.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:28px;width:440px;max-width:100%;box-shadow:var(--shadow-lg);}
+.modal-lg{width:560px;}
+.modal-title{font-size:19px;font-weight:700;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;}
+.modal-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);outline:none;margin-bottom:18px;}
+.modal-input:focus{border-color:var(--q-blue-mid);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+.btn-cancel{padding:10px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--border);color:var(--text-muted);font-size:13px;font-weight:600;}
+.btn-cancel:hover{background:var(--bg);}
+.btn-confirm{padding:10px 20px;border-radius:var(--radius-sm);background:var(--q-green);color:#fff;font-size:13px;font-weight:600;}
+.btn-confirm:hover{background:var(--q-green-mid);}
+.btn-danger{background:#DC2626;}.btn-danger:hover{background:#B91C1C;}
+#export-text{width:100%;height:200px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:11px;resize:vertical;outline:none;margin-bottom:14px;}
+
+@media(max-width:768px){
+  #topbar{padding:0 14px;gap:10px;}
+  .logo-sub{display:none;}
+  #tb-account{max-width:22vw;font-size:13px;}
+  .tb-btn{padding:6px 11px;font-size:11px;}
+  .rh-header,.rh-body{padding-left:20px;padding-right:20px;}
+  .canvas-header{padding:14px 18px 0;}
+  #canvas-content{padding:18px;}
+  .pp-topbar{padding:22px;}
+  .pp-body{padding:26px 20px 50px;}
+  #calendar-section{padding:0 18px 20px;}
+  .pp-meta{gap:16px;}
+  .cal-toggle-btn{margin:20px;width:calc(100% - 40px);justify-content:center;}
+}
+@media(max-width:480px){
+  .region-grid{grid-template-columns:1fr 1fr;}
+  .act-add{flex-wrap:wrap;}
+  .act-add .days-select[data-actcat]{max-width:100%;}
+}
+@media print{
+  #topbar,#modal-overlay,#export-modal,.canvas-header,#canvas-content,#region-home,#landing,.cal-toggle-btn,.tb-btn{display:none!important;}
+  body{background:#fff;}
+  #present-page{display:block!important;padding-top:0;}
+  .page:not(#present-page){display:none!important;}
+  .pp-topbar,.cal-col-head,.pp-stat-num,.cal-cat-pill,.pp-a{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #calendar-section{display:block!important;}
+  .pp-section,.cal-col{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo" id="logo-home"><div class="logo-mark">Q</div><div><div class="logo-text">Quantiphi</div><div class="logo-sub">Deal Canvas</div></div></div>
+  <div class="tb-divider"></div>
+  <span id="tb-region" style="display:none;"></span>
+  <span id="tb-account" style="display:none;"></span>
+  <div class="tb-spacer"></div>
+  <button class="tb-btn tb-ghost" id="btn-export" style="display:none;">⬇ Export</button>
+  <button class="tb-btn tb-ghost" id="btn-import" style="display:none;">⬆ Import</button>
+  <button class="tb-btn tb-ghost" id="btn-back-region" style="display:none;">← Accounts</button>
+  <button class="tb-btn tb-green" id="btn-present" style="display:none;">▶ Present</button>
+  <button class="tb-btn tb-blue" id="btn-edit" style="display:none;">← Edit canvas</button>
+  <input type="file" id="import-file" accept=".json" style="display:none;">
+</div>
+
+<div id="landing" class="page flex-page active">
+  <div class="landing-badge">Large Deal Workshop</div>
+  <div class="landing-title">Deal Canvas</div>
+  <div class="landing-sub">Select your region to open your team's workspace and design your large deal roadmaps.</div>
+  <div class="region-grid" id="region-grid"></div>
+</div>
+
+<div id="region-home" class="page">
+  <div class="rh-header">
+    <div class="rh-badge">⬢ <span id="rh-region-name"></span> REGION</div>
+    <div class="rh-title">Your Accounts</div>
+    <div class="rh-sub">Each account gets its own deal canvas — research, signals, commercial model and a 30/60/90 action plan. Open one to continue, or add a new account.</div>
+    <div class="rh-actions"><button class="tb-btn tb-green" id="rh-add">+ Add Account</button></div>
+  </div>
+  <div class="rh-body"><div class="section-title">Accounts</div><div class="account-grid" id="account-grid"></div></div>
+</div>
+
+<div id="canvas-page" class="page">
+  <div class="canvas-header">
+    <div class="ch-top"><span class="canvas-region-pill" id="cv-region"></span><span class="canvas-account" id="cv-account"></span></div>
+    <div class="canvas-tabs" id="canvas-tabs"></div>
+  </div>
+  <div id="canvas-content"></div>
+</div>
+
+<div id="present-page" class="page">
+  <div class="pp-topbar">
+    <div><div class="pp-badge">Quantiphi · Large Deal Strategy</div><div class="pp-account" id="pp-account"></div><div class="pp-region" id="pp-region"></div></div>
+    <div class="pp-meta" id="pp-meta"></div>
+  </div>
+  <div class="cal-wrap"><button class="cal-toggle-btn" id="cal-toggle"><span id="cal-btn-icon">📅</span><span id="cal-btn-text">Show 30 · 60 · 90 Day Action Plan</span></button></div>
+  <div id="calendar-section"></div>
+  <div class="pp-body" id="pp-body"></div>
+</div>
+
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <input class="modal-input" id="modal-input" placeholder="">
+    <div class="modal-actions"><button class="btn-cancel" id="modal-cancel">Cancel</button><button class="btn-confirm" id="modal-confirm">Create</button></div>
+  </div>
+</div>
+
+<div id="export-modal">
+  <div class="modal modal-lg">
+    <div class="modal-title">Export data</div>
+    <div class="modal-sub">Your browser blocked the automatic download. Copy this text and save it as a <b>.json</b> file to back up or share.</div>
+    <textarea id="export-text" readonly></textarea>
+    <div class="modal-actions"><button class="btn-cancel" id="export-close">Close</button><button class="btn-confirm" id="export-copy">Copy to clipboard</button></div>
+  </div>
+</div>
+
+<script>
+const FRAMEWORK = {
+  regions: ["West","North","South","Canada","PubSec"],
+  dimensions: [
+    {
+      id:"d1", num:"1", label:"Relationship & Embeddedness", short:"How deep is your access?", icon:"🤝",
+      options:[
+        {id:"d1o1",name:"Transactional vendor",desc:"Responding to RFPs, competing on price, limited exec access"},
+        {id:"d1o2",name:"Workshop & discovery partner",desc:"Running AI value-discovery sprints with business stakeholders"},
+        {id:"d1o3",name:"Embedded advisor",desc:"Co-own parts of the AI/data roadmap; client calls you before the RFP"},
+        {id:"d1o4",name:"Co-creator with exec sponsor",desc:"C-suite champion; the AI program is created with you, not competed for"},
+      ],
+      research:{
+        internal:[
+          "Map every contact at this account — name, title, team, when you last spoke",
+          "Check CRM for meeting history — how many exec-level touchpoints in the last 6 months?",
+          "Find out if anyone on your team has a personal relationship with their C-suite or VP layer",
+          "Look up LinkedIn: have their leaders spoken publicly about AI, data, or cloud ambitions?",
+          "Check for prior Quantiphi engagements, pilots, or POCs — what was the outcome and who was involved?"
+        ],
+        client:[
+          "Who else in your organisation cares most about this problem — IT only, or are business and data teams feeling the pain too?",
+          "If we ran an AI value-discovery session with your team, who would you want in the room?",
+          "How are decisions like this typically made here — a single executive or a committee?",
+          "Are you already a Google Cloud customer — and if so, what's committed and when does it renew?"
+        ]
+      },
+      signals:{
+        go:[
+          "Client invites Quantiphi to internal planning without an RFP",
+          "Business and data stakeholders (not just IT) attend your sessions",
+          "Client is sharing internal roadmaps, data, or budgets with you",
+          "They ask you to facilitate a session with their leadership team"
+        ],
+        stop:[
+          "Only the IT contact shows up — business and data owners are absent",
+          "Client treats the discovery workshop as a vendor pitch evaluation",
+          "No follow-up is requested after the session",
+          "Access is consistently blocked below VP level"
+        ]
+      },
+      actions:[
+        {id:"a1_1",text:"Propose a no-cost AI value-discovery session framed around their priority, not a product",category:"Discovery",days:30},
+        {id:"a1_2",text:"Identify 2–3 business and data stakeholders beyond IT to invite",category:"Relationship",days:30},
+        {id:"a1_3",text:"Prepare an AI-first point-of-view deck on their industry to open with credibility",category:"Strategy",days:30},
+        {id:"a1_4",text:"Run a 2–3 day working session; ensure at least one C-1 leader attends",category:"Relationship",days:60},
+        {id:"a1_5",text:"Produce a co-branded workshop output document capturing their words",category:"Deliverable",days:60},
+        {id:"a1_6",text:"Follow up with a prioritised AI opportunity map",category:"Strategy",days:60},
+        {id:"a1_7",text:"Assign a senior relationship lead for monthly exec touchpoints",category:"Relationship",days:30},
+        {id:"a1_8",text:"Request an invitation to their quarterly planning or data/AI steering meeting",category:"Relationship",days:30},
+        {id:"a1_9",text:"Introduce your exec sponsor to their VP or C-suite counterpart",category:"Executive",days:60},
+        {id:"a1_10",text:"Establish a joint governance cadence — quarterly business reviews at minimum",category:"Governance",days:90},
+        {id:"a1_11",text:"Propose a strategic account plan spanning 12–24 months, built together",category:"Strategy",days:90},
+        {id:"a1_12",text:"Map the C-suite and assign an exec relationship owner at each level",category:"Executive",days:30},
+        {id:"a1_13",text:"Co-develop the business case with their exec — they present it, you support it",category:"Commercial",days:60},
+        {id:"a1_14",text:"Facilitate a joint session between your exec team and their leadership",category:"Executive",days:60},
+        {id:"a1_15",text:"Lock in a joint Quantiphi + Google Cloud case study as part of the deal",category:"Deliverable",days:90},
+      ]
+    },
+    {
+      id:"d2", num:"2", label:"Commercial Model", short:"How is the deal structured?", icon:"💼",
+      options:[
+        {id:"d2o1",name:"Fixed price (defined AI/data scope)",desc:"Bounded scope, fixed deliverables, milestone-based payment"},
+        {id:"d2o2",name:"Build + managed AI/MLOps (run)",desc:"Implementation fee plus a recurring model-ops and run contract"},
+        {id:"d2o3",name:"AI & data engineering blanket SOW",desc:"Broad T&M drawdown across a long horizon; client pulls capacity as needed"},
+        {id:"d2o4",name:"Outcome / value-based pricing",desc:"Fees tied to business KPIs — savings, revenue uplift, SLA metrics"},
+        {id:"d2o5",name:"Google Cloud consumption / Marketplace",desc:"Consumption-led deal transacted against the client's committed Google Cloud spend"},
+      ],
+      research:{
+        internal:[
+          "Research how they've bought before — fixed price, T&M, managed service, or consumption?",
+          "Find their fiscal year and budget cycle — when do they approve large spend?",
+          "Check the client's Google Cloud commitment / EDP status and renewal date",
+          "Check earnings calls for cost discipline or AI/transformation investment language",
+          "Identify vendor consolidation or preferred-supplier programs that affect deal structure"
+        ],
+        client:[
+          "How do you prefer to structure engagements of this scale — fixed outcomes or flexibility to evolve scope?",
+          "Is budget already allocated, or are you still building the business case?",
+          "Do you have committed Google Cloud spend we could structure consumption against?",
+          "What does success look like financially — cost certainty, ROI, or consumption efficiency?",
+          "Would ongoing model-ops and run support be part of what you need?"
+        ]
+      },
+      signals:{
+        go:[
+          "Client has committed Google Cloud spend (EDP) you can position consumption against",
+          "Budget is approved and available for this fiscal year",
+          "Finance approves multi-year opex budget for managed AI/MLOps",
+          "Client agrees to specific, measurable KPIs with clean baselines"
+        ],
+        stop:[
+          "Scope keeps expanding — fixed price will become a loss-maker",
+          "Client won't define requirements before asking for a price",
+          "Budget approval depends on a future board decision",
+          "Client cannot agree on KPIs or keeps moving the goalposts"
+        ]
+      },
+      actions:[
+        {id:"a2_1",text:"Run a structured scoping workshop to nail requirements before pricing",category:"Discovery",days:30},
+        {id:"a2_2",text:"Map the client's Google Cloud committed spend and position consumption against it",category:"Commercial",days:30},
+        {id:"a2_3",text:"Confirm the client's budget ceiling early — don't build a $7M proposal for a $4M budget",category:"Commercial",days:30},
+        {id:"a2_4",text:"Present a phased fixed-price structure with natural expansion points",category:"Commercial",days:60},
+        {id:"a2_5",text:"Get written sign-off on scope boundaries to protect against creep",category:"Governance",days:60},
+        {id:"a2_6",text:"Pursue Google Cloud partner funding / MDF to offset early-stage cost",category:"Commercial",days:60},
+        {id:"a2_7",text:"Quantify cost of building MLOps in-house vs Quantiphi managed run",category:"Commercial",days:30},
+        {id:"a2_8",text:"Present the 3–5 year TCO model for build + managed AI/MLOps",category:"Commercial",days:60},
+        {id:"a2_9",text:"List / transact the solution on Google Cloud Marketplace to draw down commit",category:"Commercial",days:90},
+        {id:"a2_10",text:"Negotiate change-control process upfront — not after signing",category:"Governance",days:90},
+        {id:"a2_11",text:"Lock in a multi-year term with renewal incentives",category:"Commercial",days:90},
+        {id:"a2_12",text:"Agree on 2–3 measurable KPIs in writing with clean baselines",category:"Governance",days:30},
+        {id:"a2_13",text:"Establish baseline metrics today so there's no dispute about improvement later",category:"Governance",days:30},
+        {id:"a2_14",text:"Build a joint measurement dashboard both sides can see in real time",category:"Deliverable",days:90},
+      ]
+    },
+    {
+      id:"d3", num:"3", label:"Scope Strategy", short:"How do you land and grow?", icon:"🎯",
+      options:[
+        {id:"d3o1",name:"Single use-case entry",desc:"Tightly scoped 90-day GenAI/data win; use as a wedge for expansion"},
+        {id:"d3o2",name:"Platform / horizontal play",desc:"Position a data & AI foundation (BigQuery, Vertex AI) across multiple BUs"},
+        {id:"d3o3",name:"Multi-tower / full enterprise",desc:"Simultaneous engagement across data, AI/ML, apps, and cloud modernization"},
+      ],
+      research:{
+        internal:[
+          "Map all active and past workstreams — are you in one BU or across multiple?",
+          "Do they have a data foundation on BigQuery or a lakehouse to build on?",
+          "Research known AI / transformation programmes — annual reports, press, CIO/CDO interviews",
+          "Check LinkedIn for recent CIO, CDO, or Chief AI Officer hires — a signal of scope appetite",
+          "Identify which Quantiphi practices map to their top 3 stated strategic priorities"
+        ],
+        client:[
+          "Is this a standalone initiative or part of a bigger AI/data agenda org-wide?",
+          "Where are you on your GenAI journey — exploring, running POCs, or scaling to production?",
+          "Are other business units facing similar challenges, or is this unique to your team?",
+          "If this first engagement goes well, what would the natural next step look like?"
+        ]
+      },
+      signals:{
+        go:[
+          "A Phase 1 GenAI/data outcome has generated pull from other BUs",
+          "Your champion is actively selling Phase 2 internally",
+          "CIO/CDO is sponsoring a shared data & AI foundation",
+          "At least two BUs have confirmed use cases and budgets"
+        ],
+        stop:[
+          "Phase 1 results aren't communicated beyond the immediate team",
+          "Client treats Phase 1 as complete and closed — no appetite for next",
+          "BUs resist a shared platform — turf wars block it",
+          "Tower leads pull in different directions with no unified vision"
+        ]
+      },
+      actions:[
+        {id:"a3_1",text:"Pick the GenAI/data use case with the fastest visible outcome — not the most complex",category:"Strategy",days:30},
+        {id:"a3_2",text:"Scope tightly — a 90-day production win beats a 12-month project at this stage",category:"Strategy",days:30},
+        {id:"a3_3",text:"Map how this use case connects to 2–3 adjacent AI opportunities",category:"Strategy",days:30},
+        {id:"a3_4",text:"Deliver visibly — make sure the right stakeholders see the production results",category:"Delivery",days:60},
+        {id:"a3_5",text:"Present a 'what's next' expansion map before the engagement closes",category:"Strategy",days:60},
+        {id:"a3_6",text:"Formalise the expansion conversation before Phase 1 invoice is paid",category:"Commercial",days:90},
+        {id:"a3_7",text:"Build the data & AI foundation narrative (BigQuery + Vertex AI) across BUs",category:"Strategy",days:30},
+        {id:"a3_8",text:"Identify the CIO or CDO as primary champion with cross-BU authority",category:"Executive",days:30},
+        {id:"a3_9",text:"Run a cross-BU discovery to validate multiple AI pain points",category:"Discovery",days:60},
+        {id:"a3_10",text:"Propose phased rollout with BU 1 as anchor and expansion rights in the contract",category:"Commercial",days:60},
+        {id:"a3_11",text:"Negotiate enterprise terms that scale with adoption and GC consumption",category:"Commercial",days:90},
+        {id:"a3_12",text:"Establish a platform governance model with a cross-BU steering committee",category:"Governance",days:90},
+        {id:"a3_13",text:"Build a multi-tower capability map (data, AI/ML, apps, cloud modernization)",category:"Strategy",days:30},
+        {id:"a3_14",text:"Develop an integrated business case spanning all towers with one ROI story",category:"Commercial",days:60},
+      ]
+    },
+    {
+      id:"d4", num:"4", label:"Stakeholder Coverage", short:"Who's approving this?", icon:"👥",
+      options:[
+        {id:"d4o1",name:"IT-led only",desc:"CIO and IT team are primary contacts; business and data owners not engaged"},
+        {id:"d4o2",name:"IT + Finance alignment",desc:"CFO engaged; AI business case validated with finance"},
+        {id:"d4o3",name:"Multi-BU + Data/AI office",desc:"Two or more BU heads plus the CDO/Chief AI Officer have skin in the game"},
+        {id:"d4o4",name:"C-suite / board-level",desc:"CEO/COO is the champion; AI is a strategic priority, not just a project"},
+      ],
+      research:{
+        internal:[
+          "Build an org chart — map who owns budget, who influences, who blocks",
+          "Is there a Chief AI Officer or CDO, and who owns the GenAI budget?",
+          "Research each key stakeholder: tenure, background, public AI/data priorities",
+          "Check if the CFO has been vocal about cost or AI investment priorities",
+          "Identify stakeholders you've never met — those are gaps to close"
+        ],
+        client:[
+          "For a decision of this size, who else needs to be involved before approval?",
+          "Who signs off on model governance, security, and data residency?",
+          "Is there a steering committee or AI governance board overseeing investments like this?",
+          "Has Finance been looped in yet, or is that a later step?",
+          "Who would be the executive sponsor on your side if this moves forward?"
+        ]
+      },
+      signals:{
+        go:[
+          "A Chief AI Officer or CDO has been appointed and is engaged",
+          "CFO or Finance VP has attended at least one meeting",
+          "Multiple BU heads attend meetings without being asked",
+          "CEO/CIO is personally advocating for the AI program internally"
+        ],
+        stop:[
+          "Business case is still owned entirely by IT — Finance and the CDO aren't briefed",
+          "BU heads aren't engaging — all access is filtered through IT",
+          "Exec sponsor changes roles and no successor is identified",
+          "Deal is delegated entirely to procurement — exec is disengaged"
+        ]
+      },
+      actions:[
+        {id:"a4_1",text:"Identify the CFO or Finance VP and request an introduction through your champion",category:"Relationship",days:30},
+        {id:"a4_2",text:"Build a financial AI business case in their language — NPV, payback, IRR",category:"Commercial",days:30},
+        {id:"a4_3",text:"Map the CDO / Chief AI Officer and align on their priorities",category:"Discovery",days:30},
+        {id:"a4_4",text:"Present the business case directly to Finance — not through IT",category:"Executive",days:60},
+        {id:"a4_5",text:"Get Finance to stress-test your ROI assumptions",category:"Commercial",days:60},
+        {id:"a4_6",text:"CFO or Finance VP should co-sign the investment recommendation",category:"Governance",days:90},
+        {id:"a4_7",text:"Map all BU heads who could benefit; prioritise top 2–3 to engage first",category:"Strategy",days:30},
+        {id:"a4_8",text:"Run a cross-BU session to surface shared problems and collective ownership",category:"Relationship",days:60},
+        {id:"a4_9",text:"Build an executive steering committee with representation from all BUs",category:"Governance",days:90},
+        {id:"a4_10",text:"Map your exec team against their C-suite — assign relationship owners",category:"Executive",days:30},
+        {id:"a4_11",text:"Create non-commercial reasons to meet: AI briefings, thought leadership, roundtables",category:"Relationship",days:30},
+        {id:"a4_12",text:"Facilitate a joint exec session to align on AI vision before commercials",category:"Executive",days:60},
+        {id:"a4_13",text:"CEO or COO should be named executive sponsor in the contract",category:"Governance",days:90},
+      ]
+    },
+    {
+      id:"d5", num:"5", label:"Value Narrative", short:"Why spend $5M+?", icon:"💡",
+      options:[
+        {id:"d5o1",name:"Cost & efficiency via AI automation",desc:"Automate manual workflows, consolidate tooling, cut run cost with AI/ML"},
+        {id:"d5o2",name:"AI-driven growth & CX",desc:"New digital channels, personalization, faster time-to-market via AI"},
+        {id:"d5o3",name:"Responsible AI, governance & compliance",desc:"Model governance, data residency, audit readiness, secure GenAI"},
+        {id:"d5o4",name:"GenAI / AI transformation anchor",desc:"A baioniq-led enterprise GenAI program as the strategic inflection point"},
+      ],
+      research:{
+        internal:[
+          "Read the last 2 annual reports and the most recent earnings call transcript",
+          "Search news for the client in the last 12 months — AI announcements, cost cuts, M&A, regulation?",
+          "Find comparable Quantiphi case studies with measurable ROI in this client's industry",
+          "Check if the client has published a digital, AI, or data strategy",
+          "Research their NPS or customer-experience scores if publicly available"
+        ],
+        client:[
+          "If you look back 12 months from now and this has been a success — what has changed?",
+          "Is the primary driver cost efficiency, growth, risk/governance, or transformation?",
+          "How does leadership measure success for investments at this scale?",
+          "Was there a triggering event — a GenAI mandate, competitor move, or regulation — that made this urgent now?",
+          "What would it cost to do nothing, or to delay this by another year?"
+        ]
+      },
+      signals:{
+        go:[
+          "Client ran a GenAI POC and wants to productionize",
+          "A Chief AI / Chief Data Officer has been appointed",
+          "The board has a named GenAI mandate or budget line",
+          "Client is using your framing and language in internal communications"
+        ],
+        stop:[
+          "GenAI interest is exploratory with no budget owner",
+          "Client is treating AI as a science project, not a business outcome",
+          "Financial sponsor (CFO) is not engaged in the value case",
+          "A competitor is positioned as the AI partner and you're a workstream"
+        ]
+      },
+      actions:[
+        {id:"a5_1",text:"Run a baioniq-led GenAI value-discovery workshop",category:"Discovery",days:30},
+        {id:"a5_2",text:"Quantify the AI automation baseline: manual effort, cycle time, error cost",category:"Discovery",days:30},
+        {id:"a5_3",text:"Find a CFO or Finance VP ally to sponsor the value narrative",category:"Relationship",days:30},
+        {id:"a5_4",text:"Research comparable Quantiphi case studies with hard ROI numbers",category:"Strategy",days:30},
+        {id:"a5_5",text:"Build an AI business case with conservative / base / upside scenarios",category:"Commercial",days:60},
+        {id:"a5_6",text:"Get the CFO to co-present the business case to the board",category:"Executive",days:60},
+        {id:"a5_7",text:"Map the client's growth agenda — which channels or markets AI can unlock",category:"Discovery",days:30},
+        {id:"a5_8",text:"Connect the solution to specific revenue initiatives on the client's roadmap",category:"Strategy",days:60},
+        {id:"a5_9",text:"Identify regulatory or governance drivers creating urgency",category:"Discovery",days:30},
+        {id:"a5_10",text:"Build a responsible-AI / governance framework into the proposal",category:"Governance",days:60},
+        {id:"a5_11",text:"Embed responsible-AI and governance milestones as contractual deliverables",category:"Governance",days:90},
+        {id:"a5_12",text:"Co-author an AI transformation vision document — make the client the hero",category:"Deliverable",days:60},
+        {id:"a5_13",text:"Negotiate a multi-year partnership frame even if Year 1 is the only committed spend",category:"Commercial",days:90},
+        {id:"a5_14",text:"Design early milestones that produce visible AI results within 90 days",category:"Delivery",days:90},
+      ]
+    },
+    {
+      id:"d6", num:"6", label:"Partner & Ecosystem", short:"How do you go to market?", icon:"🤜",
+      options:[
+        {id:"d6o1",name:"Quantiphi solo (GC premier partner)",desc:"Quantiphi delivers end-to-end as a Google Cloud premier partner, no co-delivery dependency"},
+        {id:"d6o2",name:"Google Cloud co-sell motion",desc:"Anchored to the client's Google Cloud commitment; joint account plan with the GC field team and partner funding"},
+        {id:"d6o3",name:"Google Cloud + ISV / specialist",desc:"Bring a Marketplace ISV, data partner, or NVIDIA compute within the Google Cloud ecosystem"},
+      ],
+      research:{
+        internal:[
+          "Check the client's Google Cloud footprint — job postings, press, partner portal",
+          "Check Quantiphi's Google Cloud partner standing and specializations relevant to this account",
+          "Confirm whether a Google Cloud field team is already engaged at this account",
+          "Identify Marketplace ISVs or data partners you'd bring for capability gaps",
+          "Assess whether NVIDIA compute is needed for GPU-intensive AI workloads"
+        ],
+        client:[
+          "Are you already a Google Cloud customer — and what's committed?",
+          "Do you have existing Google Cloud investments we should build on top of?",
+          "Is there appetite to bring in specialist partners, or do you prefer a single accountable partner?",
+          "Have you had experiences — good or bad — with multi-partner delivery models?"
+        ]
+      },
+      signals:{
+        go:[
+          "Google Cloud field team is actively co-selling this account",
+          "Client has committed Google Cloud spend (EDP) you can position against",
+          "Solution can be transacted via Google Cloud Marketplace to draw down commit",
+          "Partner funding / MDF has been approved for a POC"
+        ],
+        stop:[
+          "Client is standardised on a competing cloud with limited GC footprint",
+          "Another Google Cloud partner is already designated for this account",
+          "Specialist/ISV partner is pursuing the client independently",
+          "Scope has grown beyond your realistic delivery capability"
+        ]
+      },
+      actions:[
+        {id:"a6_1",text:"Engage the Google Cloud account exec and customer engineer for a joint account plan",category:"Relationship",days:30},
+        {id:"a6_2",text:"Map the client's Google Cloud committed spend / EDP status and renewal date",category:"Discovery",days:30},
+        {id:"a6_3",text:"Identify the relevant Google Cloud industry solution / specialization to align to",category:"Strategy",days:30},
+        {id:"a6_4",text:"Confirm Quantiphi's partner standing covers the required GC specializations",category:"Discovery",days:30},
+        {id:"a6_5",text:"Pursue Google Cloud partner funding / MDF for the POC",category:"Commercial",days:60},
+        {id:"a6_6",text:"Develop one joint Quantiphi + Google Cloud solution narrative — not two",category:"Strategy",days:60},
+        {id:"a6_7",text:"Bring in NVIDIA as a named specialist for compute-/GPU-intensive AI workloads",category:"Strategy",days:60},
+        {id:"a6_8",text:"Shortlist Marketplace ISVs / data partners for any capability gap",category:"Strategy",days:60},
+        {id:"a6_9",text:"List / transact the solution on Google Cloud Marketplace to unlock committed spend",category:"Commercial",days:90},
+        {id:"a6_10",text:"Establish a joint QBR cadence with the Google Cloud field team",category:"Governance",days:90},
+        {id:"a6_11",text:"Define escalation paths so the client knows who owns what across partners",category:"Governance",days:90},
+        {id:"a6_12",text:"Protect the client relationship — keep Quantiphi as the prime and single point of accountability",category:"Governance",days:60},
+      ]
+    },
+    {
+      id:"d7", num:"7", label:"Competitive Moat", short:"What makes this sticky?", icon:"🏰",
+      options:[
+        {id:"d7o1",name:"Embedded in the GC data/AI stack",desc:"Woven into BigQuery, Vertex AI, and core data pipelines — migration cost is prohibitive"},
+        {id:"d7o2",name:"People embedded on-site",desc:"Co-located team; personal relationships create natural lock-in"},
+        {id:"d7o3",name:"Quantiphi accelerators & IP",desc:"baioniq, Dociphi, and Codeaira embedded in client workflows — competitors can't replicate"},
+        {id:"d7o4",name:"Exec relationship capital",desc:"Your leadership has personal trust with their C-suite"},
+      ],
+      research:{
+        internal:[
+          "Audit current footprint — how many of their core systems and data pipelines do you touch?",
+          "Identify which of your people have the strongest personal relationships here",
+          "Map which Quantiphi accelerators (baioniq, Dociphi, Codeaira) fit their industry use cases",
+          "Assess switching cost: if they replaced you today, what would it take in time, money, and risk?",
+          "Find out who your main competitors are at this account and assess their footprint"
+        ],
+        client:[
+          "What would make you confident a partner is in this for the long term — not just to win the deal?",
+          "How important is it that the team is deeply embedded in your org vs working remotely?",
+          "Are there capabilities or institutional knowledge you'd want a partner to retain over time?",
+          "What has made previous vendor relationships difficult to sustain?"
+        ]
+      },
+      signals:{
+        go:[
+          "Client depends on a Quantiphi accelerator (baioniq/Dociphi) for live workflows",
+          "Quantiphi co-owns the client's Vertex AI / BigQuery reference architecture",
+          "Client treats your on-site team as internal — all-hands invites, Slack access",
+          "Client exec reaches out to your exec proactively, not just for a deal"
+        ],
+        stop:[
+          "Client is building internal capability to replace your layer",
+          "Your team is kept at arm's length — access to key meetings is restricted",
+          "A competitor has introduced comparable accelerators at the account",
+          "Exec relationship is concentrated in one person who then changes roles"
+        ]
+      },
+      actions:[
+        {id:"a7_1",text:"Map all integration touchpoints you could own: BigQuery, Vertex AI, core pipelines",category:"Strategy",days:30},
+        {id:"a7_2",text:"Map which Quantiphi accelerators fit the client's industry use cases",category:"Strategy",days:30},
+        {id:"a7_3",text:"Embed an accelerator into a core workflow during the pilot — not as a side tool",category:"Delivery",days:60},
+        {id:"a7_4",text:"Co-own the client's Vertex AI / BigQuery reference architecture",category:"Delivery",days:60},
+        {id:"a7_5",text:"Quantify the switching cost off the GC data/AI stack in the renewal conversation",category:"Commercial",days:90},
+        {id:"a7_6",text:"Propose co-location as part of the delivery model from the first commercial conversation",category:"Relationship",days:30},
+        {id:"a7_7",text:"Select team members based on relationship skills, not just technical skills",category:"Delivery",days:30},
+        {id:"a7_8",text:"Get your team invited to client all-hands, town halls, and team events",category:"Relationship",days:30},
+        {id:"a7_9",text:"Create institutional knowledge deliberately — document the client's systems and culture",category:"Delivery",days:60},
+        {id:"a7_10",text:"Formalise the on-site model in contract — named individuals, not just FTE counts",category:"Governance",days:90},
+        {id:"a7_11",text:"Formalise accelerator IP ownership and licensing terms in the contract",category:"Governance",days:90},
+        {id:"a7_12",text:"Map your exec team against the client's C-suite — assign a named owner to each",category:"Executive",days:30},
+        {id:"a7_13",text:"Establish a quarterly exec-to-exec cadence not tied to deal milestones",category:"Executive",days:60},
+        {id:"a7_14",text:"Document the exec relationship map so it survives personnel changes",category:"Governance",days:90},
+      ]
+    }
+  ]
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  QUANTIPHI DEAL CANVAS — APP LOGIC (v3: tabbed account architecture)
+// ═══════════════════════════════════════════════════════════════════════
+
+let state={};
+let currentRegion=null, currentAccount=null;
+let canvasTab='research';
+let expandedPillars={};      // {dimId:true}
+let clientOpen={};           // {dimId:true}
+let calVisible=false;
+
+const SIGNAL_COLORS={green:'#129F4D',yellow:'#F5A623',red:'#DC2626',none:'#C7CEDE'};
+const DIM_COLORS=[
+  {bg:'#EBF1FD',text:'#254499',icon:'rgba(37,68,153,.14)'},
+  {bg:'#E6FAF5',text:'#129F4D',icon:'rgba(18,159,77,.14)'},
+  {bg:'#FEF8EC',text:'#B45309',icon:'rgba(217,119,6,.16)'},
+  {bg:'#FEF0F0',text:'#DC2626',icon:'rgba(220,38,38,.14)'},
+  {bg:'#F3F0FF',text:'#7C3AED',icon:'rgba(124,58,237,.14)'},
+  {bg:'#EDFAF5',text:'#065F46',icon:'rgba(6,95,70,.14)'},
+  {bg:'#FDF0F7',text:'#BE185D',icon:'rgba(190,24,93,.14)'},
+];
+const CAT_COLORS={'Relationship':'#129F4D','Commercial':'#254499','Strategy':'#3557E5','Executive':'#7C3AED','Governance':'#B45309','Discovery':'#0891B2','Deliverable':'#BE185D','Delivery':'#065F46','Custom':'#606060'};
+const STATUS_COLORS=['#D6D6D6','#F5A623','#3557E5','#129F4D'];
+
+// ── UTIL ───────────────────────────────────────────────────────────────
+let _uid=0; function uid(){ return 'x'+(Date.now().toString(36))+(_uid++); }
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function $(id){ return document.getElementById(id); }
+function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); $(id).classList.add('active'); try{window.scrollTo(0,0);}catch(e){} }
+
+// ── STORAGE ────────────────────────────────────────────────────────────
+function save(){ try{ localStorage.setItem('q_deal_canvas_v3', JSON.stringify(state)); }catch(e){ console.warn('save failed',e); } }
+function load(){ try{ const raw=localStorage.getItem('q_deal_canvas_v3'); if(raw) state=JSON.parse(raw); }catch(e){ state={}; } }
+
+// ── CATALOGUES ─────────────────────────────────────────────────────────
+function actionCatalogue(){
+  const cat={};
+  FRAMEWORK.dimensions.forEach(dim=>dim.actions.forEach(a=>{
+    (cat[a.category]=cat[a.category]||[]).push({text:a.text,days:a.days,source:dim.label});
+  }));
+  return cat;
+}
+function signalCatalogue(){
+  const cat={};
+  FRAMEWORK.dimensions.forEach(dim=>{
+    cat[dim.label]=[].concat(dim.signals.go,dim.signals.stop);
+  });
+  return cat;
+}
+function commercialCatalogue(){
+  const d2=FRAMEWORK.dimensions.find(d=>d.id==='d2');
+  return d2?d2.options.map(o=>({name:o.name,desc:o.desc})):[];
+}
+
+// ── DEFAULT ACCOUNT ────────────────────────────────────────────────────
+function defaultAccount(){
+  const acc={name:'',pillars:{},signals:[],commercial:[],actions:{30:[],60:[],90:[]}};
+  FRAMEWORK.dimensions.forEach(d=>{ acc.pillars[d.id]={researchAnswers:{},notes:''}; });
+  // prefill signals: first 'go' signal of each pillar
+  FRAMEWORK.dimensions.forEach(d=>{
+    if(d.signals.go[0]) acc.signals.push({id:uid(),text:d.signals.go[0],color:'none',source:d.label});
+  });
+  // prefill commercial: standard models ranked
+  commercialCatalogue().forEach((m,i)=>acc.commercial.push({id:uid(),name:m.name,desc:m.desc,reason:'',custom:false}));
+  return acc;
+}
+function ensureRegion(r){ if(!state[r]) state[r]={accounts:{}}; return state[r]; }
+function getAccount(){
+  if(!currentRegion||!currentAccount) return null;
+  ensureRegion(currentRegion);
+  const a=state[currentRegion].accounts[currentAccount];
+  if(!a) return null;
+  // backfill
+  a.pillars=a.pillars||{};
+  FRAMEWORK.dimensions.forEach(d=>{ a.pillars[d.id]=a.pillars[d.id]||{researchAnswers:{},notes:''}; });
+  a.signals=a.signals||[]; a.commercial=a.commercial||[];
+  a.actions=a.actions||{30:[],60:[],90:[]};
+  return a;
+}
+
+// ── TOPBAR ─────────────────────────────────────────────────────────────
+function setTopbar(o){
+  const map={region:'tb-region',account:'tb-account',export:'btn-export',import:'btn-import',backRegion:'btn-back-region',present:'btn-present',edit:'btn-edit'};
+  Object.entries(map).forEach(([k,id])=>{ const el=$(id); if(el) el.style.display=o[k]?'':'none'; });
+}
+
+// ── NAV ────────────────────────────────────────────────────────────────
+function goHome(){ currentRegion=null;currentAccount=null;setTopbar({});renderLanding();showPage('landing'); }
+function selectRegion(r){ currentRegion=r;currentAccount=null;ensureRegion(r);$('tb-region').textContent=r;setTopbar({region:true,export:true,import:true});renderRegionHome();showPage('region-home'); }
+function showRegionHome(){ currentAccount=null;setTopbar({region:true,export:true,import:true});renderRegionHome();showPage('region-home'); }
+function selectAccount(id){ currentAccount=id;canvasTab='research';const a=getAccount();$('tb-account').textContent=a.name;setTopbar({region:true,account:true,backRegion:true,present:true,export:true,import:true});renderCanvas();showPage('canvas-page'); }
+function showCanvas(){ setTopbar({region:true,account:true,backRegion:true,present:true,export:true,import:true});renderCanvas();showPage('canvas-page'); }
+function showPresent(){ calVisible=false;setTopbar({region:true,account:true,edit:true});renderPresent();showPage('present-page'); }
+
+// ── LANDING ────────────────────────────────────────────────────────────
+function renderLanding(){
+  const grid=$('region-grid'); grid.innerHTML='';
+  FRAMEWORK.regions.forEach(r=>{
+    const rData=state[r]||{accounts:{}};
+    const accounts=Object.values(rData.accounts||{});
+    const segs=FRAMEWORK.dimensions.map((_,i)=>{
+      const ratio=accounts.length?accounts.reduce((s,a)=>s+(Object.values(a.pillars||{}).filter(p=>Object.values(p.researchAnswers||{}).some(x=>x&&x.trim())).length),0)/(accounts.length*7):0;
+      return `<div class="rc-seg${ratio>(i/7)?' filled':''}"></div>`;
+    }).join('');
+    const card=document.createElement('button');
+    card.className='region-card';
+    card.innerHTML=`<div class="rc-name">${esc(r)}</div><div class="rc-count">${accounts.length} account${accounts.length!==1?'s':''}</div><div class="rc-bar">${segs}</div>`;
+    card.addEventListener('click',()=>selectRegion(r));
+    grid.appendChild(card);
+  });
+}
+
+// ── REGION HOME ────────────────────────────────────────────────────────
+function renderRegionHome(){
+  $('rh-region-name').textContent=currentRegion;
+  const grid=$('account-grid'); grid.innerHTML='';
+  const accounts=(state[currentRegion]&&state[currentRegion].accounts)||{};
+  const entries=Object.entries(accounts);
+  if(entries.length===0) grid.innerHTML=`<div class="empty-hint">No accounts yet. Add your first account to start building a deal canvas.</div>`;
+  entries.forEach(([id,acc])=>{
+    const answered=Object.values(acc.pillars||{}).filter(p=>Object.values(p.researchAnswers||{}).some(x=>x&&x.trim())).length;
+    const sigN=(acc.signals||[]).length, comN=(acc.commercial||[]).length;
+    const actN=['30','60','90'].reduce((s,k)=>s+((acc.actions&&acc.actions[k])||[]).length,0);
+    const card=document.createElement('div'); card.className='account-card';
+    card.innerHTML=`<div class="ac-name">${esc(acc.name||'Unnamed Account')}</div>
+      <div class="ac-meta">${answered}/7 pillars researched · ${sigN} signals · ${actN} actions</div>
+      <div class="ac-actions"><button class="ac-open">Open canvas →</button><button class="ac-del" title="Delete">🗑</button></div>`;
+    card.querySelector('.ac-open').addEventListener('click',e=>{e.stopPropagation();selectAccount(id);});
+    card.querySelector('.ac-del').addEventListener('click',e=>{e.stopPropagation();deleteAccount(id);});
+    card.addEventListener('click',()=>selectAccount(id));
+    grid.appendChild(card);
+  });
+  const addBtn=document.createElement('button'); addBtn.className='add-account-btn';
+  addBtn.innerHTML='<span style="font-size:20px;">+</span> Add new account';
+  addBtn.addEventListener('click',showAddAccount); grid.appendChild(addBtn);
+}
+function deleteAccount(id){ openConfirm('Delete account?','This permanently removes this account and all its data.',()=>{ delete state[currentRegion].accounts[id]; save(); renderRegionHome(); }); }
+function showAddAccount(){ openModal('New Account','Name the account you want to build a deal strategy for.','e.g. Acme Corporation',name=>{ if(!name||!name.trim())return; const id='acc_'+Date.now(); ensureRegion(currentRegion); state[currentRegion].accounts[id]=defaultAccount(); state[currentRegion].accounts[id].name=name.trim(); save(); selectAccount(id); }); }
+
+// ── CANVAS (tabbed) ────────────────────────────────────────────────────
+function renderCanvas(){
+  const acc=getAccount(); if(!acc) return;
+  $('cv-region').textContent=currentRegion;
+  $('cv-account').textContent=acc.name;
+  const tabs=[['research','Research'],['signals','Signals'],['commercial','Commercial'],['actions','Actions']];
+  $('canvas-tabs').innerHTML=tabs.map(([t,l])=>`<button class="cv-tab${t===canvasTab?' active':''}" data-tab="${t}">${l}</button>`).join('');
+  $('canvas-tabs').querySelectorAll('.cv-tab').forEach(b=>b.addEventListener('click',()=>{ canvasTab=b.getAttribute('data-tab'); renderCanvas(); }));
+  const c=$('canvas-content');
+  if(canvasTab==='research') c.innerHTML=viewResearch(acc);
+  else if(canvasTab==='signals') c.innerHTML=viewSignals(acc);
+  else if(canvasTab==='commercial') c.innerHTML=viewCommercial(acc);
+  else if(canvasTab==='actions') c.innerHTML=viewActions(acc);
+  bindCanvas(acc);
+  c.scrollTop=0;
+}
+
+// ── RESEARCH VIEW ──────────────────────────────────────────────────────
+function viewResearch(acc){
+  return `<div class="view-intro">Work through each strategic pillar. Answer the internal prep questions from your two quarters of account knowledge. Client discovery questions are optional prompts to keep in mind.</div>`+
+  FRAMEWORK.dimensions.map((dim,i)=>{
+    const col=DIM_COLORS[i]; const p=acc.pillars[dim.id];
+    const exp=!!expandedPillars[dim.id];
+    const answered=Object.values(p.researchAnswers||{}).filter(x=>x&&x.trim()).length;
+    const total=dim.research.internal.length;
+    let inner='';
+    if(exp){
+      const qs=dim.research.internal.map((q,qi)=>`
+        <div class="rq-item">
+          <div class="rq-question"><div class="rq-num" style="background:${col.text}">${qi+1}</div><span>${esc(q)}</span></div>
+          <textarea class="rq-answer" data-dim="${dim.id}" data-rkey="i${qi}" rows="2" placeholder="Your answer or findings…">${esc(p.researchAnswers['i'+qi]||'')}</textarea>
+        </div>`).join('');
+      const cliOpen=!!clientOpen[dim.id];
+      const cli=`<div class="client-collapse">
+        <button class="client-toggle" data-cli="${dim.id}"><span>💬 Client discovery questions (optional)</span><span class="cli-arrow">${cliOpen?'▲':'▼'}</span></button>
+        ${cliOpen?`<div class="client-body">${dim.research.client.map(q=>`<div class="rq-client-hint">${esc(q)}</div>`).join('')}</div>`:''}
+      </div>`;
+      inner=`<div class="pillar-inner">
+        ${qs}
+        ${cli}
+        <div class="notes-block">
+          <div class="notes-label">Additional notes</div>
+          <textarea class="notes-area" data-dim="${dim.id}" placeholder="Extra context, observations, open questions…">${esc(p.notes||'')}</textarea>
+        </div>
+      </div>`;
+    }
+    return `<div class="pillar-acc${exp?' open':''}">
+      <button class="pillar-acc-head" data-toggle="${dim.id}">
+        <div class="pc-icon" style="background:${col.icon}">${dim.icon}</div>
+        <div class="pa-text"><div class="pa-num">PILLAR ${dim.num}</div><div class="pa-label">${esc(dim.label)}</div><div class="pa-short">${esc(dim.short)}</div></div>
+        <div class="pa-meta">${answered}/${total}</div>
+        <div class="pa-arrow">${exp?'▲':'▼'}</div>
+      </button>
+      ${inner}
+    </div>`;
+  }).join('');
+}
+
+// ── SIGNALS VIEW ───────────────────────────────────────────────────────
+function viewSignals(acc){
+  const list=acc.signals.map((s,i)=>{
+    const colorBtns=['green','yellow','red'].map(c=>
+      `<button class="sig-color sig-${c}${s.color===c?' active':''}" data-sigcolor="${s.id}" data-c="${c}" title="${c==='green'?'On track':c==='yellow'?'Watch':'Concern'}"></button>`
+    ).join('');
+    return `<div class="sig-row" draggable="true" data-sigid="${s.id}">
+      <div class="sig-drag">⠿</div>
+      <div class="sig-dot" style="background:${SIGNAL_COLORS[s.color||'none']}"></div>
+      <div class="sig-text">${esc(s.text)}</div>
+      <div class="sig-colors">${colorBtns}</div>
+      <button class="row-del" data-sigdel="${s.id}">×</button>
+    </div>`;
+  }).join('');
+  const cats=Object.keys(signalCatalogue());
+  return `<div class="view-intro">Log the signals you've picked up across this account. Tag each <span style="color:#129F4D;font-weight:600;">green</span> (on track), <span style="color:#B45309;font-weight:600;">yellow</span> (watch), or <span style="color:#DC2626;font-weight:600;">red</span> (concern). Drag to reorder by importance.</div>
+    <div class="sig-list">${list||'<div class="no-content">No signals yet. Add from the catalogue or write your own below.</div>'}</div>
+    <div class="add-card">
+      <div class="add-card-title">Add from catalogue</div>
+      <div class="add-row">
+        <select class="days-select" id="sig-cat">${cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+        <select class="days-select flex1" id="sig-pick"></select>
+        <button class="add-btn" id="sig-add-cat">Add</button>
+      </div>
+      <div class="add-card-title" style="margin-top:14px;">Or write your own</div>
+      <div class="add-row">
+        <input class="add-input" id="sig-custom" placeholder="Describe a signal you're seeing…">
+        <button class="add-btn" id="sig-add-custom">Add</button>
+      </div>
+    </div>`;
+}
+
+// ── COMMERCIAL VIEW ────────────────────────────────────────────────────
+function viewCommercial(acc){
+  const list=acc.commercial.map((c,i)=>`
+    <div class="cm-row" draggable="true" data-cmid="${c.id}">
+      <div class="cm-drag">⠿</div>
+      <div class="cm-rank">${i+1}</div>
+      <div class="cm-main">
+        <div class="cm-name">${esc(c.name)}${c.custom?' <span class="cm-tag">custom</span>':''}</div>
+        ${c.desc?`<div class="cm-desc">${esc(c.desc)}</div>`:''}
+        ${i<2?`<textarea class="rank-reasoning" data-reason="${c.id}" rows="2" placeholder="${i===0?'Why is this your #1 priority for this account?':'Reasoning for your #2 priority…'}">${esc(c.reason||'')}</textarea>`:''}
+      </div>
+      <button class="row-del" data-cmdel="${c.id}">×</button>
+    </div>`).join('');
+  const existing=acc.commercial.map(c=>c.name.toLowerCase());
+  const avail=commercialCatalogue().filter(m=>!existing.includes(m.name.toLowerCase()));
+  return `<div class="view-intro">A large account often runs several commercial models across projects. Rank them by priority for this account — drag to reorder, and add reasoning for your top two.</div>
+    <div class="cm-list">${list||'<div class="no-content">No commercial models yet.</div>'}</div>
+    <div class="add-card">
+      ${avail.length?`<div class="add-card-title">Add a standard model</div>
+        <div class="add-row">
+          <select class="days-select flex1" id="cm-pick">${avail.map(m=>`<option value="${esc(m.name)}">${esc(m.name)}</option>`).join('')}</select>
+          <button class="add-btn" id="cm-add-std">Add</button>
+        </div>`:''}
+      <div class="add-card-title" style="${avail.length?'margin-top:14px;':''}">Or add a custom model</div>
+      <div class="add-row">
+        <input class="add-input" id="cm-custom" placeholder="Name your custom commercial model…">
+        <button class="add-btn" id="cm-add-custom">Add</button>
+      </div>
+    </div>`;
+}
+
+// ── ACTIONS VIEW (30/60/90) ────────────────────────────────────────────
+function viewActions(acc){
+  const cat=actionCatalogue();
+  const cats=Object.keys(cat);
+  const makeBucket=(days,cls,label)=>{
+    const items=acc.actions[days]||[];
+    const rows=items.map(a=>{
+      const cc=CAT_COLORS[a.category]||'#606060';
+      return `<div class="act-row">
+        <div class="act-cat-dot" style="background:${cc}"></div>
+        <div class="act-main"><div class="act-text">${esc(a.text)}</div><div class="act-cat-tag">${esc(a.category)}${a.source?' · '+esc(a.source):''}</div></div>
+        <button class="row-del" data-actdel="${days}|${a.id}">×</button>
+      </div>`;
+    }).join('');
+    return `<div class="act-bucket">
+      <div class="act-bucket-head ${cls}">
+        <div><div class="act-month">Month ${days/30}</div><div class="act-days">${days} Days</div></div>
+        <div class="act-count">${items.length}</div>
+      </div>
+      <div class="act-bucket-body">
+        ${rows||'<div class="act-empty">No actions yet</div>'}
+        <div class="act-add">
+          <select class="days-select" data-actcat="${days}">${cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+          <select class="days-select flex1" data-actpick="${days}"></select>
+          <button class="add-btn" data-actadd="${days}">Add</button>
+        </div>
+        <div class="act-add">
+          <input class="add-input" data-actcustom="${days}" placeholder="Or write a custom action…">
+          <button class="add-btn" data-actaddcustom="${days}">Add</button>
+        </div>
+      </div>
+    </div>`;
+  };
+  return `<div class="view-intro">Design the account's 30 · 60 · 90 day plan. For each period, pick a category then choose a specific play from the catalogue — or write your own.</div>
+    <div class="act-grid">${makeBucket(30,'b30','30')}${makeBucket(60,'b60','60')}${makeBucket(90,'b90','90')}</div>`;
+}
+
+// ── BIND CANVAS EVENTS ─────────────────────────────────────────────────
+function bindCanvas(acc){
+  const root=$('canvas-content');
+  // research
+  root.querySelectorAll('[data-toggle]').forEach(b=>b.addEventListener('click',()=>{ const id=b.getAttribute('data-toggle'); expandedPillars[id]=!expandedPillars[id]; renderCanvas(); }));
+  root.querySelectorAll('[data-cli]').forEach(b=>b.addEventListener('click',()=>{ const id=b.getAttribute('data-cli'); clientOpen[id]=!clientOpen[id]; renderCanvas(); }));
+  root.querySelectorAll('.rq-answer').forEach(el=>el.addEventListener('input',()=>{ const p=acc.pillars[el.getAttribute('data-dim')]; p.researchAnswers[el.getAttribute('data-rkey')]=el.value; save(); }));
+  root.querySelectorAll('.notes-area').forEach(el=>el.addEventListener('input',()=>{ acc.pillars[el.getAttribute('data-dim')].notes=el.value; save(); }));
+  // signals
+  root.querySelectorAll('[data-sigcolor]').forEach(b=>b.addEventListener('click',()=>{ const s=acc.signals.find(x=>x.id===b.getAttribute('data-sigcolor')); const c=b.getAttribute('data-c'); s.color=s.color===c?'none':c; save(); renderCanvas(); }));
+  root.querySelectorAll('[data-sigdel]').forEach(b=>b.addEventListener('click',()=>{ acc.signals=acc.signals.filter(x=>x.id!==b.getAttribute('data-sigdel')); save(); renderCanvas(); }));
+  const sigCat=$('sig-cat'), sigPick=$('sig-pick');
+  if(sigCat&&sigPick){ const fill=()=>{ const arr=signalCatalogue()[sigCat.value]||[]; sigPick.innerHTML=arr.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join(''); }; fill(); sigCat.addEventListener('change',fill); }
+  const sigAddCat=$('sig-add-cat'); if(sigAddCat) sigAddCat.addEventListener('click',()=>{ if(!sigPick.value)return; acc.signals.push({id:uid(),text:sigPick.value,color:'none',source:sigCat.value}); save(); renderCanvas(); });
+  const sigAddCustom=$('sig-add-custom'); if(sigAddCustom) sigAddCustom.addEventListener('click',()=>{ const v=$('sig-custom').value.trim(); if(!v)return; acc.signals.push({id:uid(),text:v,color:'none',source:'Custom'}); save(); renderCanvas(); });
+  bindDrag(root,'.sig-row','data-sigid',acc.signals,()=>{ save(); renderCanvas(); });
+  // commercial
+  root.querySelectorAll('[data-reason]').forEach(el=>el.addEventListener('input',()=>{ const c=acc.commercial.find(x=>x.id===el.getAttribute('data-reason')); if(c){c.reason=el.value;save();} }));
+  root.querySelectorAll('[data-cmdel]').forEach(b=>b.addEventListener('click',()=>{ acc.commercial=acc.commercial.filter(x=>x.id!==b.getAttribute('data-cmdel')); save(); renderCanvas(); }));
+  const cmAddStd=$('cm-add-std'); if(cmAddStd) cmAddStd.addEventListener('click',()=>{ const name=$('cm-pick').value; const m=commercialCatalogue().find(x=>x.name===name); acc.commercial.push({id:uid(),name:name,desc:m?m.desc:'',reason:'',custom:false}); save(); renderCanvas(); });
+  const cmAddCustom=$('cm-add-custom'); if(cmAddCustom) cmAddCustom.addEventListener('click',()=>{ const v=$('cm-custom').value.trim(); if(!v)return; acc.commercial.push({id:uid(),name:v,desc:'',reason:'',custom:true}); save(); renderCanvas(); });
+  bindDrag(root,'.cm-row','data-cmid',acc.commercial,()=>{ save(); renderCanvas(); });
+  // actions
+  [30,60,90].forEach(days=>{
+    const catSel=root.querySelector(`[data-actcat="${days}"]`), pickSel=root.querySelector(`[data-actpick="${days}"]`);
+    if(catSel&&pickSel){ const fill=()=>{ const arr=actionCatalogue()[catSel.value]||[]; pickSel.innerHTML=arr.map(a=>`<option value="${esc(a.text)}">${esc(a.text)}</option>`).join(''); }; fill(); catSel.addEventListener('change',fill); }
+    const addBtn=root.querySelector(`[data-actadd="${days}"]`);
+    if(addBtn) addBtn.addEventListener('click',()=>{ if(!pickSel.value)return; acc.actions[days].push({id:uid(),text:pickSel.value,category:catSel.value,source:''}); save(); renderCanvas(); });
+    const customInput=root.querySelector(`[data-actcustom="${days}"]`), customBtn=root.querySelector(`[data-actaddcustom="${days}"]`);
+    if(customBtn) customBtn.addEventListener('click',()=>{ const v=customInput.value.trim(); if(!v)return; acc.actions[days].push({id:uid(),text:v,category:'Custom',source:''}); save(); renderCanvas(); });
+  });
+  root.querySelectorAll('[data-actdel]').forEach(b=>b.addEventListener('click',()=>{ const [days,id]=b.getAttribute('data-actdel').split('|'); acc.actions[days]=acc.actions[days].filter(x=>x.id!==id); save(); renderCanvas(); }));
+}
+
+// ── DRAG REORDER (generic) ─────────────────────────────────────────────
+let dragId=null, dragArr=null, dragKey=null;
+function bindDrag(root,sel,attr,arr,cb){
+  root.querySelectorAll(sel).forEach(el=>{
+    el.addEventListener('dragstart',e=>{ dragId=el.getAttribute(attr); dragArr=arr; dragKey=attr; el.classList.add('dragging'); });
+    el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+    el.addEventListener('dragover',e=>{ e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{ e.preventDefault(); el.classList.remove('drag-over');
+      if(dragArr!==arr) return;
+      const targetId=el.getAttribute(attr);
+      const from=arr.findIndex(x=>x.id===dragId), to=arr.findIndex(x=>x.id===targetId);
+      if(from<0||to<0||from===to) return;
+      const [m]=arr.splice(from,1); arr.splice(to,0,m); cb();
+    });
+  });
+}
+
+// ── PRESENT ────────────────────────────────────────────────────────────
+function renderPresent(){
+  const acc=getAccount(); if(!acc) return;
+  $('pp-account').textContent=acc.name;
+  $('pp-region').textContent=currentRegion+' Region';
+  const answered=Object.values(acc.pillars).filter(p=>Object.values(p.researchAnswers||{}).some(x=>x&&x.trim())).length;
+  const sigN=acc.signals.length;
+  const actN=['30','60','90'].reduce((s,k)=>s+acc.actions[k].length,0);
+  $('pp-meta').innerHTML=`
+    <div class="pp-stat"><div class="pp-stat-num">${answered}/7</div><div class="pp-stat-label">Pillars</div></div>
+    <div class="pp-stat"><div class="pp-stat-num">${sigN}</div><div class="pp-stat-label">Signals</div></div>
+    <div class="pp-stat"><div class="pp-stat-num">${actN}</div><div class="pp-stat-label">Actions</div></div>`;
+  const body=$('pp-body'); body.innerHTML=''; let any=false;
+
+  // Signals
+  if(acc.signals.length){ any=true;
+    const rows=acc.signals.map(s=>`<div class="pp-signal"><span class="pp-sig-dot" style="background:${SIGNAL_COLORS[s.color||'none']}"></span><span>${esc(s.text)}</span>${s.source&&s.source!=='Custom'?`<span class="pp-sig-src">${esc(s.source)}</span>`:''}</div>`).join('');
+    const sec=document.createElement('div'); sec.className='pp-section';
+    sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:rgba(245,166,35,.14)">📡</div><div class="pp-sec-headtext"><div class="pp-sec-num">ACCOUNT</div><div class="pp-sec-label">Signals to date</div></div></div><div class="pp-sec-body">${rows}</div>`;
+    body.appendChild(sec);
+  }
+  // Commercial
+  if(acc.commercial.length){ any=true;
+    const rows=acc.commercial.map((c,i)=>`<div class="pp-cm"><div class="pp-cm-rank">${i+1}</div><div><div class="pp-cm-name">${esc(c.name)}</div>${c.reason?`<div class="pp-cm-reason">${esc(c.reason)}</div>`:''}</div></div>`).join('');
+    const sec=document.createElement('div'); sec.className='pp-section';
+    sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:rgba(37,68,153,.14)">💼</div><div class="pp-sec-headtext"><div class="pp-sec-num">ACCOUNT</div><div class="pp-sec-label">Commercial model priority</div></div></div><div class="pp-sec-body">${rows}</div>`;
+    body.appendChild(sec);
+  }
+  // Research sections
+  FRAMEWORK.dimensions.forEach((dim,i)=>{
+    const p=acc.pillars[dim.id]; const col=DIM_COLORS[i];
+    const qa=dim.research.internal.map((q,qi)=>{ const a=p.researchAnswers['i'+qi]; return a&&a.trim()?`<div class="pp-qa"><div class="pp-q">${esc(q)}</div><div class="pp-a" style="border-color:${col.text}">${esc(a)}</div></div>`:''; }).filter(Boolean).join('');
+    if(!qa&&!(p.notes&&p.notes.trim())) return; any=true;
+    const sec=document.createElement('div'); sec.className='pp-section';
+    sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:${col.icon}">${dim.icon}</div><div class="pp-sec-headtext"><div class="pp-sec-num">PILLAR ${dim.num}</div><div class="pp-sec-label">${esc(dim.label)}</div></div></div>
+      <div class="pp-sec-body">${qa}${p.notes&&p.notes.trim()?`<div class="pp-note">${esc(p.notes)}</div>`:''}</div>`;
+    body.appendChild(sec);
+  });
+
+  if(!any) body.innerHTML=`<div class="pp-empty">Nothing filled in yet. Go back to the canvas and start building.</div>`;
+  calVisible=false; $('calendar-section').classList.remove('visible');
+  $('cal-btn-text').textContent='Show 30 · 60 · 90 Day Action Plan'; $('cal-btn-icon').textContent='📅';
+}
+function toggleCalendar(){
+  calVisible=!calVisible; const sec=$('calendar-section');
+  if(calVisible){ sec.classList.add('visible'); $('cal-btn-text').textContent='Hide 30 · 60 · 90 Day Plan'; $('cal-btn-icon').textContent='✕'; renderCalendar(); if(sec.scrollIntoView)sec.scrollIntoView({behavior:'smooth',block:'start'}); }
+  else { sec.classList.remove('visible'); $('cal-btn-text').textContent='Show 30 · 60 · 90 Day Action Plan'; $('cal-btn-icon').textContent='📅'; }
+}
+function renderCalendar(){
+  const acc=getAccount();
+  const makeCol=(days,cls,label)=>{
+    const items=acc.actions[days]||[];
+    const inner=items.length?items.map(a=>{ const cc=CAT_COLORS[a.category]||'#606060'; return `<div class="cal-action"><div class="cal-cat-pill" style="background:${cc}1a;color:${cc}">${esc(a.category)}</div><div class="cal-action-text">${esc(a.text)}</div></div>`; }).join(''):`<div class="cal-empty">No actions scheduled</div>`;
+    return `<div class="cal-col"><div class="cal-col-head ${cls}"><div><div class="cal-month">${label}</div><div class="cal-days">${days} Days</div></div><div class="cal-count">${items.length}</div></div><div class="cal-body">${inner}</div></div>`;
+  };
+  const total=['30','60','90'].reduce((s,k)=>s+acc.actions[k].length,0);
+  $('calendar-section').innerHTML=`<div class="cal-header"><div class="cal-title">30 · 60 · 90 Day Action Plan</div><div class="cal-sub">${esc(acc.name)} · ${currentRegion} Region · ${total} action${total!==1?'s':''}</div></div><div class="cal-grid">${makeCol(30,'c30','Month 1')}${makeCol(60,'c60','Month 2')}${makeCol(90,'c90','Month 3')}</div>`;
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────
+let modalCb=null,confirmCb=null;
+function openModal(t,s,ph,cb){ $('modal-title').textContent=t;$('modal-sub').textContent=s;$('modal-input').placeholder=ph;$('modal-input').value='';$('modal-input').style.display='';$('modal-confirm').textContent='Create';$('modal-confirm').className='btn-confirm';modalCb=cb;confirmCb=null;$('modal-overlay').classList.add('open');setTimeout(()=>$('modal-input').focus(),50); }
+function openConfirm(t,s,cb){ $('modal-title').textContent=t;$('modal-sub').textContent=s;$('modal-input').style.display='none';$('modal-confirm').textContent='Delete';$('modal-confirm').className='btn-confirm btn-danger';confirmCb=cb;modalCb=null;$('modal-overlay').classList.add('open'); }
+function closeModal(){ $('modal-overlay').classList.remove('open');modalCb=null;confirmCb=null; }
+
+// ── EXPORT / IMPORT ────────────────────────────────────────────────────
+function exportData(){
+  const json=JSON.stringify(state,null,2);
+  try{
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`quantiphi_deal_canvas_${currentRegion||'all'}_${new Date().toISOString().split('T')[0]}.json`;
+    a.style.display='none'; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(url); },150);
+  }catch(e){ showExportFallback(json); }
+}
+function showExportFallback(json){
+  $('export-text').value=json;
+  $('export-modal').classList.add('open');
+  setTimeout(()=>{ $('export-text').focus(); $('export-text').select(); },50);
+}
+function closeExportModal(){ $('export-modal').classList.remove('open'); }
+function copyExport(){ const ta=$('export-text'); ta.select(); try{ document.execCommand('copy'); $('export-copy').textContent='Copied ✓'; setTimeout(()=>$('export-copy').textContent='Copy to clipboard',1500);}catch(e){} }
+function triggerImport(){ $('import-file').click(); }
+function importData(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{ try{ const imported=JSON.parse(ev.target.result); Object.assign(state,imported); save(); if(currentRegion)renderRegionHome(); else renderLanding(); alert('Data imported successfully. Your teammate\'s accounts are now on this device.'); }catch(err){ alert('That file could not be read. Please choose a valid Deal Canvas export (.json).'); } };
+  reader.readAsText(file); e.target.value='';
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────
+function init(){
+  load(); renderLanding();
+  $('modal-confirm').addEventListener('click',()=>{ if(modalCb)modalCb($('modal-input').value); if(confirmCb)confirmCb(); closeModal(); });
+  $('modal-cancel').addEventListener('click',closeModal);
+  $('modal-input').addEventListener('keydown',e=>{ if(e.key==='Enter')$('modal-confirm').click(); if(e.key==='Escape')closeModal(); });
+  $('import-file').addEventListener('change',importData);
+  $('logo-home').addEventListener('click',goHome);
+  $('btn-export').addEventListener('click',exportData);
+  $('btn-import').addEventListener('click',triggerImport);
+  $('btn-back-region').addEventListener('click',showRegionHome);
+  $('btn-present').addEventListener('click',showPresent);
+  $('btn-edit').addEventListener('click',showCanvas);
+  $('rh-add').addEventListener('click',showAddAccount);
+  $('cal-toggle').addEventListener('click',toggleCalendar);
+  $('export-close').addEventListener('click',closeExportModal);
+  $('export-copy').addEventListener('click',copyExport);
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+else init();
+</script>
+</body>
+</html>
