@@ -272,6 +272,24 @@ input,textarea,select{font-family:inherit;font-size:inherit;}
   .act-add{flex-wrap:wrap;}
   .act-add .days-select[data-actcat]{max-width:100%;}
 }
+#save-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--q-blue-dark);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 24px;
+  box-shadow:0 -2px 12px rgba(24,43,112,.2);
+}
+#save-status{
+  font-size:12px;font-weight:600;color:var(--q-green-light);
+  display:flex;align-items:center;gap:6px;
+}
+#save-export-btn{
+  padding:7px 16px;border-radius:var(--radius-sm);
+  background:var(--q-green);color:#fff;
+  font-size:12px;font-weight:700;border:none;cursor:pointer;
+  transition:background .15s;
+}
+#save-export-btn:hover{background:var(--q-green-mid);}
 @media print{
   #topbar,#modal-overlay,#export-modal,.canvas-header,#canvas-content,#region-home,#landing,.cal-toggle-btn,.tb-btn{display:none!important;}
   body{background:#fff;}
@@ -332,6 +350,11 @@ input,textarea,select{font-family:inherit;font-size:inherit;}
   <div class="cal-wrap"><button class="cal-toggle-btn" id="cal-toggle"><span id="cal-btn-icon">📅</span><span id="cal-btn-text">Show 30 · 60 · 90 Day Action Plan</span></button></div>
   <div id="calendar-section"></div>
   <div class="pp-body" id="pp-body"></div>
+</div>
+
+<div id="save-bar">
+  <span id="save-status">● All changes saved</span>
+  <button id="save-export-btn" onclick="exportData()">⬇ Save backup file</button>
 </div>
 
 <div id="modal-overlay">
@@ -1107,6 +1130,17 @@ function renderPresent(){
     <div class="pp-stat"><div class="pp-stat-num">${actN}</div><div class="pp-stat-label">Actions</div></div>`;
   const body=$('pp-body'); body.innerHTML=''; let any=false;
 
+  // Research sections
+  FRAMEWORK.dimensions.forEach((dim,i)=>{
+    const p=acc.pillars[dim.id]; const col=DIM_COLORS[i];
+    const qa=dim.research.internal.map((q,qi)=>{ const a=p.researchAnswers['i'+qi]; return a&&a.trim()?`<div class="pp-qa"><div class="pp-q">${esc(q)}</div><div class="pp-a" style="border-color:${col.text}">${esc(a)}</div></div>`:''; }).filter(Boolean).join('');
+    if(!qa&&!(p.notes&&p.notes.trim())) return; any=true;
+    const sec=document.createElement('div'); sec.className='pp-section';
+    sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:${col.icon}">${dim.icon}</div><div class="pp-sec-headtext"><div class="pp-sec-num">PILLAR ${dim.num}</div><div class="pp-sec-label">${esc(dim.label)}</div></div></div>
+      <div class="pp-sec-body">${qa}${p.notes&&p.notes.trim()?`<div class="pp-note">${esc(p.notes)}</div>`:''}</div>`;
+    body.appendChild(sec);
+  });
+
   // Signals
   if(acc.signals.length){ any=true;
     const rows=acc.signals.map(s=>`<div class="pp-signal"><span class="pp-sig-dot" style="background:${SIGNAL_COLORS[s.color||'none']}"></span><span>${esc(s.text)}</span>${s.source&&s.source!=='Custom'?`<span class="pp-sig-src">${esc(s.source)}</span>`:''}</div>`).join('');
@@ -1121,17 +1155,6 @@ function renderPresent(){
     sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:rgba(37,68,153,.14)">💼</div><div class="pp-sec-headtext"><div class="pp-sec-num">ACCOUNT</div><div class="pp-sec-label">Commercial model priority</div></div></div><div class="pp-sec-body">${rows}</div>`;
     body.appendChild(sec);
   }
-  // Research sections
-  FRAMEWORK.dimensions.forEach((dim,i)=>{
-    const p=acc.pillars[dim.id]; const col=DIM_COLORS[i];
-    const qa=dim.research.internal.map((q,qi)=>{ const a=p.researchAnswers['i'+qi]; return a&&a.trim()?`<div class="pp-qa"><div class="pp-q">${esc(q)}</div><div class="pp-a" style="border-color:${col.text}">${esc(a)}</div></div>`:''; }).filter(Boolean).join('');
-    if(!qa&&!(p.notes&&p.notes.trim())) return; any=true;
-    const sec=document.createElement('div'); sec.className='pp-section';
-    sec.innerHTML=`<div class="pp-sec-header"><div class="pp-sec-icon" style="background:${col.icon}">${dim.icon}</div><div class="pp-sec-headtext"><div class="pp-sec-num">PILLAR ${dim.num}</div><div class="pp-sec-label">${esc(dim.label)}</div></div></div>
-      <div class="pp-sec-body">${qa}${p.notes&&p.notes.trim()?`<div class="pp-note">${esc(p.notes)}</div>`:''}</div>`;
-    body.appendChild(sec);
-  });
-
   if(!any) body.innerHTML=`<div class="pp-empty">Nothing filled in yet. Go back to the canvas and start building.</div>`;
   calVisible=false; $('calendar-section').classList.remove('visible');
   $('cal-btn-text').textContent='Show 30 · 60 · 90 Day Action Plan'; $('cal-btn-icon').textContent='📅';
@@ -1208,7 +1231,6 @@ window.addEventListener('beforeunload', function(e) {
   e.preventDefault();
   e.returnValue = '';
 });
-
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
 else init();
 </script>
